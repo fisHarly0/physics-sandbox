@@ -35,5 +35,7 @@
     now:function(){return now;}
   };
   var st=document.createElement('style');st.textContent='*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}';
-  document.documentElement.appendChild(st);
+  // file:// 通过 evaluateOnNewDocument 注入时，根元素可能尚未创建。
+  if(document.documentElement)document.documentElement.appendChild(st);
+  else document.addEventListener('DOMContentLoaded',function(){document.documentElement.appendChild(st);},{once:true});
 })();

@@ -11,6 +11,7 @@ npm install
 npm run dev        # 本地开发，改代码浏览器自动刷新
 npm run build      # 产出 dist/index.html：单文件、无外部依赖，可直接双击离线打开
 npm test           # 构建并跑回归测试（需要本机装有 Chrome）
+npm run test:offline # 构建并验证单文件 file:// 离线使用（同样需要 Chrome）
 npm run lint       # ESLint：未定义变量、对导入绑定赋值、未使用变量
 ```
 
@@ -60,6 +61,14 @@ golden 是用重构前的原版录制的（之后只因修复下面这个 bug �
 **有意改变行为后**（修 bug、加功能），先确认改动符合预期，再运行 `npm run test:update` 重新录制 golden，并把 golden 的变化一起提交。
 
 Chrome 不在默认位置时，用环境变量 `CHROME_PATH` 指定。
+
+`npm run test:offline` 只把 `dist/index.html` 复制到独立临时目录（路径包含空格和中文），
+通过 `file://` 打开，不启动 HTTP 服务；除入口 HTML、`data:` 和 `blob:` 外的资源请求都会被阻止并令测试失败。
+测试复用固定时钟，通过界面绘图、复制、拖动、开始/停止录制与点击「仅下载文件」，
+从导出 JSON 断言物体下落、复制数量、拖动位置和操作事件，并检查页面无报错。
+导出验证读取应用写入 `localStorage` 的备份，不验证浏览器是否把下载文件保存到磁盘；不向 Bug 服务提交数据。
+这是一组离线分发冒烟测试，不替代逐帧指纹回归，也不证明旧版全局变量探针兼容。
+已有构建可用 `node tests/offline.js --root=/path/to/dist` 单独验证。
 
 ## 已知问题 / 修复记录
 

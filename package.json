@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "test": "vite build && node tests/run.js",
-    "test:update": "vite build && node tests/run.js --update"
+    "test:update": "vite build && node tests/run.js --update",
+    "test:offline": "vite build && node tests/offline.js"
   },
   "dependencies": {
     "matter-js": "0.20.0"

@@ -18,7 +18,13 @@ function serve(root){return new Promise(res=>{const srv=http.createServer((req,r
 async function runScenario(browser,url,scen,opts={}){
   const page=await browser.newPage(); await page.setViewport({width:1024,height:768,deviceScaleFactor:1});
   const errors=[]; page.on('pageerror',e=>errors.push('pageerror: '+e.message)); page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text());});
-  await page.setRequestInterception(true); page.on('request',r=>{const u=r.url(); if(u.startsWith(url.replace(/\/[^/]*$/,''))||u.startsWith('data:'))r.continue(); else {errors.push('blocked external request: '+u);r.abort();}});
+  // file:// 验证只允许入口 HTML 与内嵌资源，不能借用旁边的 JS/CSS 或联网。
+  const singleFile=url.startsWith('file:');
+  if(singleFile)await page.evaluateOnNewDocument(PRELUDE);
+  await page.setRequestInterception(true); page.on('request',r=>{const u=r.url(); const allowed=singleFile
+    ? u===url||u.startsWith('data:')||u.startsWith('blob:')
+    : u.startsWith(url.replace(/\/[^/]*$/,''))||u.startsWith('data:');
+    if(allowed)r.continue(); else {errors.push('blocked external request: '+u);r.abort();}});
   if(opts.coverage)await page.coverage.startJSCoverage({resetOnNavigation:false,reportAnonymousScripts:false,includeRawScriptCoverage:true});
   await page.goto(url,{waitUntil:'load'});
   const samples=[]; const EVERY=opts.every||5;
